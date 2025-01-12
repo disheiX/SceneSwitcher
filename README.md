@@ -3,7 +3,7 @@ A simple plugin made for the [Jingle](https://github.com/DuncanRuns/Jingle) app.
 
 
 ## Setup
-* Download the plugin by going to the [release section](https://github.com/disheiX/Jingle-SceneSwitcher/releases/latest)
+* Download the plugin by going to the [release section](https://github.com/disheiX/SceneSwitcher/releases/latest)
 * Put it inside the Jingle Plugins Folder
 * Press the button `Copy script path to clipboard` at the plugin tab
 * Add the script to OBS by going to `Tools > Scripts`
