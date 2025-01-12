@@ -1,0 +1,100 @@
+obs = obslua
+
+---- Variables ----
+jingle_dir = os.getenv("UserProfile"):gsub("\\", "/") .. "/.config/Jingle/"
+last_scene_state = ''
+
+---- File Functions ----
+function read_first_line(filename)
+    local rfile = io.open(filename, "r")
+    if rfile == nil then
+        return ""
+    end
+    io.input(rfile)
+    local out = io.read()
+    io.close(rfile)
+    return out
+end
+
+function get_state_file_string(filename)
+    local success, result = pcall(read_first_line, jingle_dir .. filename)
+    if success then
+        return result
+    end
+    return nil
+end
+
+---- Misc Functions ----
+function split_string(input_string, split_char)
+    local out = {}
+    for str in input_string.gmatch(input_string, "([^" .. split_char .. "]+)") do
+        table.insert(out, str)
+    end
+    return out
+end
+
+---- Obs Functions ----
+function get_source(name)
+    return obs.obs_get_source_by_name(name)
+end
+
+function release_source(source)
+    obs.obs_source_release(source)
+end
+
+function switch_to_scene(scene_name)
+    print(scene_name)
+    local scene_source = get_source(scene_name)
+    print(scene_source)
+    if (scene_source == nil) then return false end
+    obs.obs_frontend_set_current_scene(scene_source)
+    release_source(scene_source)
+    return true
+end
+
+---- Script Functions ----
+function script_description()
+    return [[
+    <h1>Jingle OBS Switcher</h1>
+    <p>Links OBS to Jingle for scene switching.</p>
+    ]]
+end
+
+function script_load()
+    last_scene_state = get_state_file_string("obs-switcher-state")
+end
+
+function script_update(settings)
+    if not timers_activated then
+        timers_activated = true
+        obs.timer_add(loop, 20)
+    end
+end
+
+function loop()
+    local link_state = get_state_file_string("obs-link-state")
+    local scene_state = get_state_file_string("obs-switcher-state")
+    if (scene_state == last_scene_state or scene_state == nil) then
+        return
+    end
+    
+    local state_link_args = split_string(link_state, '|')
+    if state_link_args[1] == 'W' then
+        return
+    end
+
+    last_scene_state = scene_state
+    local state_scene_args = split_string(scene_state, '|')
+    if (#state_scene_args < 5) then return end
+    if table.concat(state_scene_args, '', 2, 5) == 'NNNN' then
+        switch_to_scene(state_scene_args[1])
+    else
+        for i = 2, 5 do
+            if state_scene_args[i] ~= 'N' then
+                switch_to_scene(state_scene_args[i])
+                break
+            end
+        end
+    end
+end
+

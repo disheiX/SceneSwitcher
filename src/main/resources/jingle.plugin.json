@@ -1,0 +1,6 @@
+{
+  "name": "Scene Switcher",
+  "id": "jingle-scene-switcher",
+  "version": "${version}",
+  "initializer": "me.disheiX.switcher.SceneSwitcher::initialize"
+}
