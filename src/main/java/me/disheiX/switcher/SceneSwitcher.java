@@ -12,9 +12,7 @@ import xyz.duncanruns.jingle.plugin.PluginManager;
 import xyz.duncanruns.jingle.util.FileUtil;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.nio.file.Path;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.Files;
+import java.nio.file.*;
 import java.io.InputStream;
 import java.util.Objects;
 import javax.swing.Timer;
@@ -94,9 +92,7 @@ public class SceneSwitcher {
         try {
             String scriptPath = "jingle-obs-switcher.lua";
             InputStream from = SceneSwitcher.class.getResourceAsStream("/" + scriptPath);
-            Files.copy(from, LUA_SCRIPT_PATH);
-        } catch (FileAlreadyExistsException e) {
-            Jingle.log(Level.INFO, "(SceneSwitcher) jingle-obs-switcher.lua already exists");
+            Files.copy(from, LUA_SCRIPT_PATH, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             Jingle.logError("(SceneSwitcher) Failed to write the obs link script", e);
         }
