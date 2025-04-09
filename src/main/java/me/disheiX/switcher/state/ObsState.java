@@ -59,8 +59,16 @@ public class ObsState {
     public String getFullString(ObsState oldState) {
         List<String> oldSources = oldState.name.equals("Playing") ? SceneSwitcherOptions.getAllSources() : oldState.toggledSources;
         List<String> newSources = this.name.equals("Playing") ? SceneSwitcherOptions.getAllSources() : this.toggledSources;
-        String toggleOn = newSources.stream().filter(newSource -> !oldSources.contains(newSource)).collect(Collectors.joining("&"));
-        String toggleOff = oldSources.stream().filter(oldSource -> !newSources.contains(oldSource)).collect(Collectors.joining("&"));
+
+        String toggleOn = newSources.stream()
+                .filter(newSource -> !oldSources.contains(newSource))
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.joining("&"));
+        String toggleOff = oldSources.stream()
+                .filter(oldSource -> !newSources.contains(oldSource))
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.joining("&"));
+
         return String.join("|", "name=" + this.getName(), "scene=" + this.getActiveScene(), "on=" + toggleOn, "off=" + toggleOff);
     }
 
