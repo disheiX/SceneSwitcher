@@ -1,13 +1,16 @@
 plugins {
     id 'java'
+    id 'idea'
 }
 
 group = project.maven_group
 version = project.plugin_version
 archivesBaseName = project.archives_base_name
 
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
 
 repositories {
     mavenCentral()
@@ -24,9 +27,14 @@ configurations {
     implementation.extendsFrom(provided)
 }
 
+// Ensures latest Jingle commit
+configurations.configureEach {
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+}
+
 dependencies {
     // https://jitpack.io/#DuncanRuns/Jingle/
-    implementation 'com.github.DuncanRuns:Jingle:v1.1.1'
+    implementation 'com.github.DuncanRuns:Jingle:main-SNAPSHOT'
 }
 
 processResources {
@@ -38,10 +46,16 @@ processResources {
 }
 
 jar {
+    duplicatesStrategy DuplicatesStrategy.EXCLUDE
+
     manifest {
         attributes(
             'Implementation-Version': project.version
         )
     }
-    from configurations.provided.asFileTree.files.collect { zipTree(it) }
+
+    from { configurations.provided.asFileTree.files.collect { zipTree(it) } } {
+        include '**/*.class'
+        exclude '**/module-info.*'
+    }
 }
