@@ -4,7 +4,7 @@ import xyz.duncanruns.jingle.resizing.Resizing;
 import java.lang.reflect.Field;
 
 public class ResizingStateUtil {
-    private static Field currentlyResizedField;
+    private static final Field currentlyResizedField;
 
     static {
         try {
