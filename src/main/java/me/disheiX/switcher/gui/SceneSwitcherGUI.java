@@ -99,7 +99,7 @@ public class SceneSwitcherGUI extends JPanel {
         addObsStateElement(new ObsStateElement.Labels(this));
 
         for (ObsState obsState: options.obsStates) {
-            if (obsState.equals(SceneSwitcherOptions.getDefaultState())) {
+            if (obsState.equals(SceneSwitcherOptions.getDefaultState()) || obsState.equals(SceneSwitcherOptions.getWallingState())) {
                 addObsStateElement(new ObsStateElement.DefaultState(this, obsState));
             } else {
                 addObsStateElement(new ObsStateElement(this, obsState));

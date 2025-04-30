@@ -53,21 +53,31 @@ public class SceneSwitcher {
     }
 
     public static void checkResize() {
+        // r we even playing minecraft????????
         if (!Jingle.getMainInstance().isPresent() ||
                 !SceneSwitcherOptions.getInstance().enabled ||
-                !Jingle.isInstanceActive() ||
-                !Jingle.getMainInstance().get().stateTracker.isCurrentState(InstanceState.INWORLD)
+                !Jingle.isInstanceActive()
         ) {
             return;
         }
 
-        if (lastState.equals(SceneSwitcherOptions.getDefaultState()) && !ResizingStateUtil.isCurrentlyResized()) {
+        // r we just playing chillin just playin?
+        if (lastState.equals(SceneSwitcherOptions.getDefaultState()) &&
+                !ResizingStateUtil.isCurrentlyResized() &&
+                Jingle.getMainInstance().get().stateTracker.isCurrentState(InstanceState.INWORLD)) {
+            return;
+        }
+
+        // r we just chillin on wall screen?
+        if (lastState.equals(SceneSwitcherOptions.getWallingState()) &&
+                !Jingle.getMainInstance().get().stateTracker.isCurrentState(InstanceState.INWORLD)) {
             return;
         }
 
         Rectangle currentRectangle = WindowStateUtil.getHwndRectangle(Jingle.getMainInstance().get().hwnd);
         ObsState currentState = SceneSwitcherOptions.getStateMatchingRectangle(currentRectangle);
 
+        // is this even different state?
         if (lastState.getName().equals(currentState.getName())) {
             return;
         }

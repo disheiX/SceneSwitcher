@@ -3,6 +3,7 @@ package me.disheiX.switcher;
 import com.google.gson.*;
 import me.disheiX.switcher.state.ObsState;
 import xyz.duncanruns.jingle.Jingle;
+import xyz.duncanruns.jingle.instance.InstanceState;
 import xyz.duncanruns.jingle.script.CustomizableManager;
 import xyz.duncanruns.jingle.util.FileUtil;
 
@@ -12,7 +13,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class SceneSwitcherOptions {
     private static final Path CONFIG_PATH = Jingle.FOLDER.resolve("scene-switcher-config.json");
@@ -61,6 +61,7 @@ public class SceneSwitcherOptions {
             instance.obsStates = defaultObsStates();
         }
         getDefaultState();
+        getWallingState();
     }
 
     public static void save() {
@@ -80,10 +81,18 @@ public class SceneSwitcherOptions {
     private static List<ObsState> defaultObsStates() {
         List<ObsState> obsStates = new ArrayList<>();
         obsStates.add(new ObsState("Playing", "0x0", "Playing", ""));
+        obsStates.add(new ObsState("Walling", "0x0", "Walling", ""));
         obsStates.add(new ObsState("eye_measuring", CustomizableManager.get("Resizing", "eye_measuring"), "Playing", ""));
         obsStates.add(new ObsState("planar_abuse", CustomizableManager.get("Resizing", "planar_abuse"), "Playing", ""));
         obsStates.add(new ObsState("thin_bt", CustomizableManager.get("Resizing", "thin_bt"), "Playing", ""));
         return obsStates;
+    }
+
+    public static ObsState getWallingState() {
+        return instance.obsStates.stream().filter(obsState -> obsState.getName().equals("Walling")).findFirst().orElseGet(() -> {
+            instance.obsStates.add(1, new ObsState("Walling", "0x0", "Walling", ""));
+            return instance.obsStates.get(1);
+        });
     }
 
     public static ObsState getDefaultState() {
@@ -93,18 +102,16 @@ public class SceneSwitcherOptions {
         });
     }
 
-    public static List<String> getAllSources() {
-        return instance.obsStates.stream()
-                .map(ObsState::getToggledSources)
-                .flatMap(Collection::stream)
-                .distinct()
-                .collect(Collectors.toList());
-    }
-
     public static ObsState getStateMatchingRectangle(Rectangle rectangle) {
         return instance.obsStates.stream()
                 .filter(obsState -> obsState.matchesRectangle(rectangle))
-                .findFirst().orElse(getDefaultState());
+                .findFirst().orElseGet(() -> {
+                    if (!Jingle.getMainInstance().isPresent() || !Jingle.getMainInstance().get().stateTracker.isCurrentState(InstanceState.INWORLD)) {
+                        return getWallingState();
+                    } else {
+                        return getDefaultState();
+                    }
+                });
     }
 
     public static boolean matchingExistingName(String nameString) {
