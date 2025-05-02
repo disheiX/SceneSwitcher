@@ -57,8 +57,8 @@ public class ObsState {
     }
 
     public String getFullString(ObsState oldState) {
-        List<String> oldSources = oldState.name.equals("Playing") ? SceneSwitcherOptions.getAllSources() : oldState.toggledSources;
-        List<String> newSources = this.name.equals("Playing") ? SceneSwitcherOptions.getAllSources() : this.toggledSources;
+        List<String> oldSources = oldState.toggledSources;
+        List<String> newSources = this.toggledSources;
 
         String toggleOn = newSources.stream()
                 .filter(newSource -> !oldSources.contains(newSource))

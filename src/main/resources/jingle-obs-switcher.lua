@@ -106,9 +106,8 @@ function toggle_sources(sources, toggle)
 end
 
 function loop()
-    local link_state = get_state_file_string("obs-link-state")
     local scene_state = get_state_file_string("obs-switcher-state")
-    if (scene_state == nil or scene_state == last_scene_state or split_string(link_state, '|')[1] == 'W') then
+    if (scene_state == nil or scene_state == last_scene_state) then
         return
     end
 
