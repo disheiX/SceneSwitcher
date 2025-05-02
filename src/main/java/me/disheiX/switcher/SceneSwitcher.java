@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.*;
 import java.io.InputStream;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class SceneSwitcher {
     private static final Path LUA_SCRIPT_PATH = Jingle.FOLDER.resolve("jingle-obs-switcher.lua");
@@ -43,41 +44,36 @@ public class SceneSwitcher {
         JingleGUI.addPluginTab("OBS Scene Switcher", new SceneSwitcherGUI());
         generateResources();
 
+        AtomicLong timeTracker = new AtomicLong(System.currentTimeMillis());
+
         PluginEvents.END_TICK.register(() -> {
-            try {
-                checkResize();
-            } catch (Exception e) {
-                Jingle.logError("(SceneSwitcher) Error while checking for resize", e);
+            long currentTime = System.currentTimeMillis();
+            if (currentTime - timeTracker.get() > 5) {
+                try {
+                    if (SceneSwitcherOptions.getInstance().enabled) {
+                        updateState();
+                    }
+                } catch (Exception e) {
+                    Jingle.logError("(SceneSwitcher) Error while checking for resize", e);
+                }
+                timeTracker.set(currentTime);
             }
         });
     }
 
-    public static void checkResize() {
-        // r we even playing minecraft????????
-        if (!Jingle.getMainInstance().isPresent() ||
-                !SceneSwitcherOptions.getInstance().enabled ||
-                !Jingle.isInstanceActive()
-        ) {
-            return;
+    public static void updateState() {
+        ObsState currentState;
+
+        if (ResizingStateUtil.isCurrentlyResized()) {
+            assert Jingle.getMainInstance().isPresent();
+            Rectangle currentRectangle = WindowStateUtil.getHwndRectangle(Jingle.getMainInstance().get().hwnd);
+            currentState = SceneSwitcherOptions.getStateFromRectangle(currentRectangle);
+        } else if (Jingle.getMainInstance().map(i -> i.stateTracker.isCurrentState(InstanceState.WALL)).orElse(false)) {
+            currentState = SceneSwitcherOptions.getStateFromName("Walling");
+        } else {
+            currentState = SceneSwitcherOptions.getDefaultState();
         }
 
-        // r we just playing chillin just playin?
-        if (lastState.equals(SceneSwitcherOptions.getDefaultState()) &&
-                !ResizingStateUtil.isCurrentlyResized() &&
-                Jingle.getMainInstance().get().stateTracker.isCurrentState(InstanceState.INWORLD)) {
-            return;
-        }
-
-        // r we just chillin on wall screen?
-        if (lastState.equals(SceneSwitcherOptions.getWallingState()) &&
-                Jingle.getMainInstance().get().stateTracker.isCurrentState(InstanceState.WALL)) {
-            return;
-        }
-
-        Rectangle currentRectangle = WindowStateUtil.getHwndRectangle(Jingle.getMainInstance().get().hwnd);
-        ObsState currentState = SceneSwitcherOptions.getStateMatchingRectangle(currentRectangle);
-
-        // is this even different state?
         if (lastState.getName().equals(currentState.getName())) {
             return;
         }

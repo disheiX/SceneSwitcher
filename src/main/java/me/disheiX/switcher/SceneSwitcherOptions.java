@@ -3,7 +3,6 @@ package me.disheiX.switcher;
 import com.google.gson.*;
 import me.disheiX.switcher.state.ObsState;
 import xyz.duncanruns.jingle.Jingle;
-import xyz.duncanruns.jingle.instance.InstanceState;
 import xyz.duncanruns.jingle.script.CustomizableManager;
 import xyz.duncanruns.jingle.util.FileUtil;
 
@@ -61,7 +60,6 @@ public class SceneSwitcherOptions {
             instance.obsStates = defaultObsStates();
         }
         getDefaultState();
-        getWallingState();
     }
 
     public static void save() {
@@ -88,11 +86,18 @@ public class SceneSwitcherOptions {
         return obsStates;
     }
 
-    public static ObsState getWallingState() {
-        return instance.obsStates.stream().filter(obsState -> obsState.getName().equals("Walling")).findFirst().orElseGet(() -> {
-            instance.obsStates.add(1, new ObsState("Walling", "0x0", "Walling", ""));
-            return instance.obsStates.get(1);
-        });
+    public static ObsState getStateFromName(String name) {
+        return instance.obsStates.stream()
+                .filter(obsState -> obsState.getName().equals(name))
+                .findFirst()
+                .orElse(getDefaultState());
+    }
+
+    public static ObsState getStateFromRectangle(Rectangle rectangle) {
+        return instance.obsStates.stream()
+                .filter(obsState -> obsState.matchesRectangle(rectangle))
+                .findFirst()
+                .orElse(getDefaultState());
     }
 
     public static ObsState getDefaultState() {
@@ -100,18 +105,6 @@ public class SceneSwitcherOptions {
             instance.obsStates.add(0, new ObsState("Playing", "0x0", "Playing", ""));
             return instance.obsStates.get(0);
         });
-    }
-
-    public static ObsState getStateMatchingRectangle(Rectangle rectangle) {
-        return instance.obsStates.stream()
-                .filter(obsState -> obsState.matchesRectangle(rectangle))
-                .findFirst().orElseGet(() -> {
-                    if (Jingle.getMainInstance().map(i -> i.stateTracker.isCurrentState(InstanceState.WALL)).orElse(false)) {
-                        return getWallingState();
-                    } else {
-                        return getDefaultState();
-                    }
-                });
     }
 
     public static boolean matchingExistingName(String nameString) {

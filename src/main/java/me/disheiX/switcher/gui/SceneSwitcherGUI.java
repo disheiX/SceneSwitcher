@@ -96,28 +96,19 @@ public class SceneSwitcherGUI extends JPanel {
         this.scenesPanel.removeAll();
         gbc.gridy = 0;
 
-        addObsStateElement(new ObsStateElement.Labels(this));
+        new ObsStateElement.Labels().build(this);
 
         for (ObsState obsState: options.obsStates) {
-            if (obsState.equals(SceneSwitcherOptions.getDefaultState()) || obsState.equals(SceneSwitcherOptions.getWallingState())) {
-                addObsStateElement(new ObsStateElement.DefaultState(this, obsState));
-            } else {
-                addObsStateElement(new ObsStateElement(this, obsState));
-            }
+            new ObsStateElement(obsState).build(this);
         }
 
-        this.addAddSceneButton();
+        this.addAddStateButton();
 
         this.mainPanel.revalidate();
         this.mainPanel.repaint();
     }
 
-    private void addObsStateElement(ObsStateElement obsStateElement) {
-        obsStateElement.build();
-        obsStateElement.setEnabled(SceneSwitcherOptions.getInstance().enabled);
-    }
-
-    private void addAddSceneButton() {
+    private void addAddStateButton() {
         SceneSwitcherOptions options = SceneSwitcherOptions.getInstance();
         JButton addSceneButton = new JButton("Add State");
 
@@ -138,22 +129,26 @@ public class SceneSwitcherGUI extends JPanel {
                 nameAnsObj = askNameFunc.apply("Invalid input!\n");
             }
 
-            Object initialSelection = CustomizableManager.get("Resizing", nameAnsObj.toString());
+            Object dimensionsAnsObj = "0x0";
 
-            Function<String, Object> askDimensionsFunc = s -> JOptionPane.showInputDialog(
-                    this.mainPanel,
-                    s + "Enter the width and height resize dimensions for new OBS State separated by an 'x' (eg. \"250x1080\"):",
-                    "Scene Switcher: New OBS State",
-                    JOptionPane.QUESTION_MESSAGE,
-                    null,
-                    null,
-                    initialSelection == null ? "250x1080" : initialSelection.toString()
-            );
+            if (!nameAnsObj.toString().equals("Walling")) {
+                Object initialSelection = CustomizableManager.get("Resizing", nameAnsObj.toString());
 
-            Object dimensionsAnsObj = askDimensionsFunc.apply("");
-            if (dimensionsAnsObj == null) return;
-            while (!ObsState.isValidDimensionsString(dimensionsAnsObj.toString())) {
-                dimensionsAnsObj = askDimensionsFunc.apply(dimensionsAnsObj.toString().trim().isEmpty() ? "Invalid input!\n" : "Those resize dimensions are already being used!\n");
+                Function<String, Object> askDimensionsFunc = s -> JOptionPane.showInputDialog(
+                        this.mainPanel,
+                        s + "Enter the width and height resize dimensions for new OBS State separated by an 'x' (eg. \"250x1080\"):",
+                        "Scene Switcher: New OBS State",
+                        JOptionPane.QUESTION_MESSAGE,
+                        null,
+                        null,
+                        initialSelection == null ? "250x1080" : initialSelection.toString()
+                );
+
+                dimensionsAnsObj = askDimensionsFunc.apply("");
+                if (dimensionsAnsObj == null) return;
+                while (!ObsState.isValidDimensionsString(dimensionsAnsObj.toString())) {
+                    dimensionsAnsObj = askDimensionsFunc.apply(dimensionsAnsObj.toString().trim().isEmpty() ? "Invalid input!\n" : "Those resize dimensions are already being used!\n");
+                }
             }
 
             options.obsStates.add(new ObsState(nameAnsObj.toString(), dimensionsAnsObj.toString(), "Playing", ""));
