@@ -106,7 +106,7 @@ public class SceneSwitcherOptions {
         return instance.obsStates.stream()
                 .filter(obsState -> obsState.matchesRectangle(rectangle))
                 .findFirst().orElseGet(() -> {
-                    if (!Jingle.getMainInstance().isPresent() || !Jingle.getMainInstance().get().stateTracker.isCurrentState(InstanceState.INWORLD)) {
+                    if (Jingle.getMainInstance().map(i -> i.stateTracker.isCurrentState(InstanceState.WALL)).orElse(false)) {
                         return getWallingState();
                     } else {
                         return getDefaultState();

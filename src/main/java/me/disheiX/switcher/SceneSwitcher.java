@@ -70,7 +70,7 @@ public class SceneSwitcher {
 
         // r we just chillin on wall screen?
         if (lastState.equals(SceneSwitcherOptions.getWallingState()) &&
-                !Jingle.getMainInstance().get().stateTracker.isCurrentState(InstanceState.INWORLD)) {
+                Jingle.getMainInstance().get().stateTracker.isCurrentState(InstanceState.WALL)) {
             return;
         }
 
