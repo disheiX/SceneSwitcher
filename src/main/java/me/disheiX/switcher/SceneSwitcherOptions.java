@@ -12,7 +12,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class SceneSwitcherOptions {
     private static final Path CONFIG_PATH = Jingle.FOLDER.resolve("scene-switcher-config.json");
@@ -80,10 +79,25 @@ public class SceneSwitcherOptions {
     private static List<ObsState> defaultObsStates() {
         List<ObsState> obsStates = new ArrayList<>();
         obsStates.add(new ObsState("Playing", "0x0", "Playing", ""));
+        obsStates.add(new ObsState("Walling", "0x0", "Walling", ""));
         obsStates.add(new ObsState("eye_measuring", CustomizableManager.get("Resizing", "eye_measuring"), "Playing", ""));
         obsStates.add(new ObsState("planar_abuse", CustomizableManager.get("Resizing", "planar_abuse"), "Playing", ""));
         obsStates.add(new ObsState("thin_bt", CustomizableManager.get("Resizing", "thin_bt"), "Playing", ""));
         return obsStates;
+    }
+
+    public static ObsState getStateFromName(String name) {
+        return instance.obsStates.stream()
+                .filter(obsState -> obsState.getName().equals(name))
+                .findFirst()
+                .orElse(getDefaultState());
+    }
+
+    public static ObsState getStateFromRectangle(Rectangle rectangle) {
+        return instance.obsStates.stream()
+                .filter(obsState -> obsState.matchesRectangle(rectangle))
+                .findFirst()
+                .orElse(getDefaultState());
     }
 
     public static ObsState getDefaultState() {
@@ -91,20 +105,6 @@ public class SceneSwitcherOptions {
             instance.obsStates.add(0, new ObsState("Playing", "0x0", "Playing", ""));
             return instance.obsStates.get(0);
         });
-    }
-
-    public static List<String> getAllSources() {
-        return instance.obsStates.stream()
-                .map(ObsState::getToggledSources)
-                .flatMap(Collection::stream)
-                .distinct()
-                .collect(Collectors.toList());
-    }
-
-    public static ObsState getStateMatchingRectangle(Rectangle rectangle) {
-        return instance.obsStates.stream()
-                .filter(obsState -> obsState.matchesRectangle(rectangle))
-                .findFirst().orElse(getDefaultState());
     }
 
     public static boolean matchingExistingName(String nameString) {
